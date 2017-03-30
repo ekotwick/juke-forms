@@ -26644,6 +26644,7 @@
 	    _this.prev = _this.prev.bind(_this);
 	    _this.selectAlbum = _this.selectAlbum.bind(_this);
 	    _this.selectArtist = _this.selectArtist.bind(_this);
+	    _this.newInputItem = _this.newInputItem.bind(_this);
 	    return _this;
 	  }
 	
@@ -26652,7 +26653,7 @@
 	    value: function componentDidMount() {
 	      var _this2 = this;
 	
-	      Promise.all([_axios2.default.get('/api/albums/'), _axios2.default.get('/api/artists/')]).then(function (res) {
+	      Promise.all([_axios2.default.get('/api/albums/'), _axios2.default.get('/api/artists/'), _axios2.default.get('/api/playlists')]).then(function (res) {
 	        return res.map(function (r) {
 	          return r.data;
 	        });
@@ -26669,10 +26670,11 @@
 	    }
 	  }, {
 	    key: 'onLoad',
-	    value: function onLoad(albums, artists) {
+	    value: function onLoad(albums, artists, playlists) {
 	      this.setState({
 	        albums: (0, _utils.convertAlbums)(albums),
-	        artists: artists
+	        artists: artists,
+	        playlists: playlists
 	      });
 	    }
 	  }, {
@@ -26743,16 +26745,34 @@
 	      });
 	    }
 	  }, {
+	    key: 'newInputItem',
+	    value: function newInputItem(playlist) {
+	      var _this4 = this;
+	
+	      _axios2.default.post('/api/playlists', {
+	        name: playlist
+	      }).then(function (res) {
+	        return res.data;
+	      }).then(function (result) {
+	        _this4.setState({
+	          playlists: result
+	        });
+	        // console.log(result) // response json from the server!
+	      }).then(function () {
+	        console.log(this.state);
+	      });
+	    }
+	  }, {
 	    key: 'selectArtist',
 	    value: function selectArtist(artistId) {
-	      var _this4 = this;
+	      var _this5 = this;
 	
 	      Promise.all([_axios2.default.get('/api/artists/' + artistId), _axios2.default.get('/api/artists/' + artistId + '/albums'), _axios2.default.get('/api/artists/' + artistId + '/songs')]).then(function (res) {
 	        return res.map(function (r) {
 	          return r.data;
 	        });
 	      }).then(function (data) {
-	        return _this4.onLoadArtist.apply(_this4, _toConsumableArray(data));
+	        return _this5.onLoadArtist.apply(_this5, _toConsumableArray(data));
 	      });
 	    }
 	  }, {
@@ -26770,6 +26790,7 @@
 	    value: function render() {
 	
 	      var props = Object.assign({}, this.state, {
+	        newInputItem: this.newInputItem,
 	        toggleOne: this.toggleOne,
 	        toggle: this.toggle,
 	        selectAlbum: this.selectAlbum,
@@ -26782,7 +26803,7 @@
 	        _react2.default.createElement(
 	          'div',
 	          { className: 'col-xs-2' },
-	          _react2.default.createElement(_Sidebar2.default, null)
+	          _react2.default.createElement(_Sidebar2.default, { playlists: this.state.playlists })
 	        ),
 	        _react2.default.createElement(
 	          'div',
@@ -28313,7 +28334,8 @@
 	  currentSong: {},
 	  currentSongList: [],
 	  isPlaying: false,
-	  progress: 0
+	  progress: 0,
+	  playlists: []
 	};
 	
 	exports.default = initialState;
@@ -28597,6 +28619,8 @@
 	
 	var Sidebar = function Sidebar(props) {
 	
+	  var playlists = props.playlists;
+	  console.log('props from sidebar', props);
 	  return _react2.default.createElement(
 	    'sidebar',
 	    null,
@@ -28639,6 +28663,22 @@
 	      _react2.default.createElement(
 	        'h4',
 	        null,
+	        _react2.default.createElement(
+	          'ul',
+	          { className: 'list-unstyled' },
+	          playlists.length && playlists.map(function (playlist) {
+	            return _react2.default.createElement(
+	              'li',
+	              { key: playlist.id, className: 'playlist-item menu-item' },
+	              _react2.default.createElement(
+	                _reactRouter.Link,
+	                { to: 'FILL_ME_IN' },
+	                playlist.name
+	              )
+	            );
+	          })
+	        ),
+	        _react2.default.createElement('hr', null),
 	        _react2.default.createElement(
 	          _reactRouter.Link,
 	          { className: 'btn btn-primary btn-block', to: '/playlist' },
@@ -29068,9 +29108,9 @@
 				isDisabled: false
 			};
 	
-			_this.newInputItem = _this.newInputItem.bind(_this);
+			// this.newInputItem = this.newInputItem.bind(this);
 			_this.grabValue = _this.grabValue.bind(_this);
-	
+			_this.handleSubmit = _this.handleSubmit.bind(_this);
 			return _this;
 		}
 	
@@ -29085,31 +29125,44 @@
 				}
 			}
 		}, {
-			key: 'newInputItem',
-			value: function newInputItem(evt) {
+			key: 'handleSubmit',
+			value: function handleSubmit(evt) {
 				evt.preventDefault();
+				console.log(this);
 	
-				console.log(this.state.value);
-				_axios2.default.post('/api/playlists', {
-					name: this.state.value
-				}).then(function (res) {
-					return res.data;
-				}).then(function (result) {
-					console.log(result); // response json from the server!
-				});
-	
+				var addPlaylist = this.props.newInputItem;
+				addPlaylist(this.state.value);
 				this.setState({
 					value: ''
 				});
 			}
+	
+			// newInputItem(evt) {
+			//   	evt.preventDefault();
+	
+			//   	console.log(this.state.value);
+			//   	axios.post('/api/playlists', {
+			//   		name: this.state.value
+			//   	 })
+			//  		.then(res => res.data)
+			//  		.then(result => {
+			//    		console.log(result) // response json from the server!
+			//  		});
+	
+			//   	this.setState({
+			//   		value: ''
+			//   	})
+			// }
+	
+	
 		}, {
 			key: 'render',
-			value: function render() {
+			value: function render(props) {
 	
 				return _react2.default.createElement(
 					'div',
 					null,
-					_react2.default.createElement(_NewPlaylist2.default, { value: this.state.value, isDisabled: this.state.isDisabled, newInputItem: this.newInputItem, grabValue: this.grabValue })
+					_react2.default.createElement(_NewPlaylist2.default, { value: this.state.value, isDisabled: this.state.isDisabled, handleSubmit: this.handleSubmit, grabValue: this.grabValue })
 				);
 			}
 		}]);
@@ -29139,8 +29192,6 @@
 	
 	var NewPlayList = function NewPlayList(props) {
 	
-		console.log(props);
-	
 		var newInputItem = props.newInputItem;
 	
 		var turnOnValidation = false;
@@ -29156,12 +29207,13 @@
 			turnOnValidation = false;
 		}
 	
+		console.log(this + 'from 22');
 		return _react2.default.createElement(
 			'div',
 			{ className: 'well' },
 			_react2.default.createElement(
 				'form',
-				{ className: 'form-horizontal', onSubmit: props.newInputItem },
+				{ className: 'form-horizontal', onSubmit: props.handleSubmit },
 				_react2.default.createElement(
 					'fieldset',
 					null,

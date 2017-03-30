@@ -12,10 +12,9 @@ class Playlist extends Component {
 		  isDisabled :false
 		};
 
-		this.newInputItem = this.newInputItem.bind(this);
+		// this.newInputItem = this.newInputItem.bind(this);
 		this.grabValue = this.grabValue.bind(this);
-		
-
+		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 
 	grabValue(value){
@@ -26,32 +25,43 @@ class Playlist extends Component {
 			this.setState({isDisabled:false})
 		}
 	}
-	newInputItem(evt) {
-	  	evt.preventDefault();
-	  	
-	  	console.log(this.state.value);
-	  	axios.post('/api/playlists', {
-	  		name: this.state.value
-	  	 })
-  		.then(res => res.data)
-  		.then(result => {
-    		console.log(result) // response json from the server!
-  		});
 
-	  	this.setState({
-	  		value: ''
-	  	})
-
+	handleSubmit(evt) {
+		evt.preventDefault();
+		console.log(this)
+		
+		const addPlaylist = this.props.newInputItem;
+		addPlaylist(this.state.value);
+		this.setState({
+			value: ''
+		})
 
 	}
 
+	// newInputItem(evt) {
+	//   	evt.preventDefault();
+	  	
+	//   	console.log(this.state.value);
+	//   	axios.post('/api/playlists', {
+	//   		name: this.state.value
+	//   	 })
+ //  		.then(res => res.data)
+ //  		.then(result => {
+ //    		console.log(result) // response json from the server!
+ //  		});
 
-	render(){
+	//   	this.setState({
+	//   		value: ''
+	//   	})
+	// }
+
+
+	render(props){
 
 		return (
 
 			<div>
-				<NewPlaylist value={this.state.value}  isDisabled={this.state.isDisabled} newInputItem={this.newInputItem} grabValue={this.grabValue}  />
+				<NewPlaylist value={this.state.value}  isDisabled={this.state.isDisabled} handleSubmit={this.handleSubmit} grabValue={this.grabValue}  />
 			</div>
 
 		)

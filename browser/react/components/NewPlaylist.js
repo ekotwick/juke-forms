@@ -3,8 +3,6 @@ import { Link } from 'react-router';
 
 const NewPlayList = function(props) {
 
-	console.log(props);
-
 	const newInputItem = props.newInputItem;
 
 	let turnOnValidation = false;
@@ -21,10 +19,10 @@ const NewPlayList = function(props) {
 	}
 
 
-
+	console.log(this + 'from 22');
 	return (
 		<div className="well">
-		  <form className="form-horizontal" onSubmit={props.newInputItem}>
+		  <form className="form-horizontal" onSubmit={props.handleSubmit}>
 		    <fieldset>
 		      <legend>New Playlist</legend>
 		      <div className="form-group">
